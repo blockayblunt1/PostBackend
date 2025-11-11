@@ -3,7 +3,7 @@
 # Base runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
-ENV ASPNETCORE_URLS=http://+:8080
+# PORT will be set by Render at runtime
 EXPOSE 8080
 
 # Build stage

@@ -3,6 +3,13 @@ using PostBackend.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure port for Render (use PORT env var if set, otherwise default to 8080)
+var httpPort = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrEmpty(httpPort) && int.TryParse(httpPort, out var portNumber))
+{
+    builder.WebHost.UseUrls($"http://*:{portNumber}");
+}
+
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -66,7 +73,12 @@ using (var scope = app.Services.CreateScope())
 
 // Create uploads folder for static files
 var env = app.Services.GetRequiredService<IWebHostEnvironment>();
-Directory.CreateDirectory(Path.Combine(env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads"));
+var webRootPath = env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+if (!Directory.Exists(webRootPath))
+{
+    Directory.CreateDirectory(webRootPath);
+}
+Directory.CreateDirectory(Path.Combine(webRootPath, "uploads"));
 
 // Configure the HTTP request pipeline.
 app.UseSwagger();
