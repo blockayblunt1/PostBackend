@@ -25,25 +25,17 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        // Get allowed origins from environment variable or use defaults
-        var allowedOrigins = new List<string>
-        {
-            "http://localhost:3000",
-            "http://localhost:3001",
-            "https://localhost:3000",
-            "https://localhost:3001"
-        };
-        
-        // Add Vercel frontend URL from environment variable if set
-        var frontendUrl = Environment.GetEnvironmentVariable("FRONTEND_URL");
-        if (!string.IsNullOrEmpty(frontendUrl))
-        {
-            allowedOrigins.Add(frontendUrl);
-        }
-        
-        policy.WithOrigins(allowedOrigins.ToArray())
-              .AllowAnyMethod()
+        // Allow localhost for development
+        policy.WithOrigins("http://localhost:3000", "http://localhost:3001", "https://localhost:3000", "https://localhost:3001")
+              .SetIsOriginAllowed(origin =>
+              {
+                  // Allow any Vercel app domain
+                  return origin.Contains("vercel.app") ||
+                         origin.StartsWith("http://localhost") ||
+                         origin.StartsWith("https://localhost");
+              })
               .AllowAnyHeader()
+              .AllowAnyMethod()
               .AllowCredentials();
     });
 });
