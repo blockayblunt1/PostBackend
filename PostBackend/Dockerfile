@@ -23,8 +23,8 @@ FROM base AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 
-# NOTE: For SQL Server connection when running in Docker, pass the connection string via env var:
-#   -e ConnectionStrings__DefaultConnection="Server=host.docker.internal,1433;Database=PostDb;User Id=sa;Password=YOUR_PASSWORD;TrustServerCertificate=True"
-# If using a local SQL Server instance, host.docker.internal points to the host.
+# Connection string is provided via environment variable:
+#   ConnectionStrings__DefaultConnection="Host=...;Port=5432;Database=...;Username=...;Password=..."
+# On Render, this is set automatically when you link a PostgreSQL database.
 
 ENTRYPOINT ["dotnet", "PostBackend.dll"]

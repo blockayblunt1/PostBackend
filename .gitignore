@@ -20,3 +20,4 @@ artifacts/
 
 ## Secrets
 appsettings.Development.json
+# Ensure connection strings in appsettings.json are not committed (use User Secrets or env vars)

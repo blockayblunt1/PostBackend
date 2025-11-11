@@ -8,7 +8,7 @@ namespace PostBackend.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class PostsController(AppDbContext db, IWebHostEnvironment env) : ControllerBase
+public class PostsController(AppDbContext db) : ControllerBase
 {
     // 1. List posts with search and sort
     // GET: api/posts?search=abc&sort=asc|desc
@@ -84,25 +84,4 @@ public class PostsController(AppDbContext db, IWebHostEnvironment env) : Control
         return NoContent();
     }
 
-    // Optional: Upload an image file (returns URL to use in ImageUrl)
-    [HttpPost("upload-image")]
-    [Consumes("multipart/form-data")]
-    [RequestSizeLimit(10_000_000)] // ~10MB
-    public async Task<ActionResult<string>> UploadImage([FromForm] UploadImageDto request)
-    {
-        var file = request.File;
-        if (file is null || file.Length == 0)
-            return BadRequest("No file uploaded.");
-
-        var uploadsDir = Path.Combine(env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads");
-        Directory.CreateDirectory(uploadsDir);
-
-        var fileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
-        var filePath = Path.Combine(uploadsDir, fileName);
-        await using var stream = System.IO.File.Create(filePath);
-        await file.CopyToAsync(stream);
-
-        var url = $"/uploads/{fileName}"; // served by UseStaticFiles
-        return Ok(url);
-    }
 }
