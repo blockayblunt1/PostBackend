@@ -26,8 +26,27 @@ builder.Services.AddCors(options =>
 });
 
 // EF Core - PostgreSQL (Npgsql)
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+// Try to get connection string from environment variable or configuration
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+// If not found, try to parse DATABASE_URL (common on Render when database is linked)
+if (string.IsNullOrEmpty(connectionString))
+{
+    var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+    if (!string.IsNullOrEmpty(databaseUrl))
+    {
+        // Parse postgresql://user:password@host:port/database format
+        var uri = new Uri(databaseUrl);
+        var userInfo = uri.UserInfo.Split(':');
+        connectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.LocalPath.TrimStart('/')};Username={Uri.UnescapeDataString(userInfo[0])};Password={Uri.UnescapeDataString(userInfo[1])}";
+    }
+}
+
+if (string.IsNullOrEmpty(connectionString))
+{
+    throw new InvalidOperationException("Connection string 'DefaultConnection' not found. Please set ConnectionStrings__DefaultConnection or DATABASE_URL environment variable.");
+}
+
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
 
