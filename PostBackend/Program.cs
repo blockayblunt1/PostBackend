@@ -74,7 +74,12 @@ app.UseSwaggerUI();
 
 app.UseCors();
 
-app.UseHttpsRedirection();
+// Only use HTTPS redirection in development (Render handles HTTPS at load balancer)
+if (app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseStaticFiles();
 
 app.UseAuthorization();
